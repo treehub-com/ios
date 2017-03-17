@@ -7,15 +7,37 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		525DB0591E660A350089500E /* index.html in Resources */ = {isa = PBXBuildFile; fileRef = 525DB0581E660A350089500E /* index.html */; };
+		52E6ACE51E7C3F3A007961C3 /* files in Resources */ = {isa = PBXBuildFile; fileRef = 52E6ACE41E7C3F3A007961C3 /* files */; };
+		52E6ACE71E7C513A007961C3 /* Cartfile in Resources */ = {isa = PBXBuildFile; fileRef = 52E6ACE61E7C513A007961C3 /* Cartfile */; };
+		52E6ACEA1E7C52D7007961C3 /* Zip.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52E6ACE91E7C52D7007961C3 /* Zip.framework */; };
+		52E6ACEC1E7C5315007961C3 /* Zip.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 52E6ACE91E7C52D7007961C3 /* Zip.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		52E6ACEE1E7C559F007961C3 /* SwiftyJSON.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52E6ACED1E7C559F007961C3 /* SwiftyJSON.framework */; };
+		52E6ACEF1E7C55AE007961C3 /* SwiftyJSON.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 52E6ACED1E7C559F007961C3 /* SwiftyJSON.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		52F06B111E4A6E6200F45C8B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52F06B101E4A6E6200F45C8B /* AppDelegate.swift */; };
 		52F06B131E4A6E6200F45C8B /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52F06B121E4A6E6200F45C8B /* ViewController.swift */; };
 		52F06B181E4A6E6200F45C8B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 52F06B171E4A6E6200F45C8B /* Assets.xcassets */; };
 		52F06B1B1E4A6E6200F45C8B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 52F06B191E4A6E6200F45C8B /* LaunchScreen.storyboard */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		52E6ACEB1E7C52FA007961C3 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				52E6ACEF1E7C55AE007961C3 /* SwiftyJSON.framework in CopyFiles */,
+				52E6ACEC1E7C5315007961C3 /* Zip.framework in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
-		525DB0581E660A350089500E /* index.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; path = index.html; sourceTree = "<group>"; };
+		52E6ACE41E7C3F3A007961C3 /* files */ = {isa = PBXFileReference; lastKnownFileType = folder; path = files; sourceTree = "<group>"; };
+		52E6ACE61E7C513A007961C3 /* Cartfile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Cartfile; sourceTree = "<group>"; };
+		52E6ACE91E7C52D7007961C3 /* Zip.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Zip.framework; path = Carthage/Build/iOS/Zip.framework; sourceTree = "<group>"; };
+		52E6ACED1E7C559F007961C3 /* SwiftyJSON.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftyJSON.framework; path = Carthage/Build/iOS/SwiftyJSON.framework; sourceTree = "<group>"; };
 		52F06B0D1E4A6E6200F45C8B /* Treehub.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Treehub.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		52F06B101E4A6E6200F45C8B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		52F06B121E4A6E6200F45C8B /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -29,17 +51,30 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				52E6ACEE1E7C559F007961C3 /* SwiftyJSON.framework in Frameworks */,
+				52E6ACEA1E7C52D7007961C3 /* Zip.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		52E6ACE81E7C52D7007961C3 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				52E6ACED1E7C559F007961C3 /* SwiftyJSON.framework */,
+				52E6ACE91E7C52D7007961C3 /* Zip.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		52F06B041E4A6E6200F45C8B = {
 			isa = PBXGroup;
 			children = (
+				52E6ACE61E7C513A007961C3 /* Cartfile */,
 				52F06B0F1E4A6E6200F45C8B /* Treehub */,
 				52F06B0E1E4A6E6200F45C8B /* Products */,
+				52E6ACE81E7C52D7007961C3 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -54,7 +89,7 @@
 		52F06B0F1E4A6E6200F45C8B /* Treehub */ = {
 			isa = PBXGroup;
 			children = (
-				525DB0581E660A350089500E /* index.html */,
+				52E6ACE41E7C3F3A007961C3 /* files */,
 				52F06B101E4A6E6200F45C8B /* AppDelegate.swift */,
 				52F06B121E4A6E6200F45C8B /* ViewController.swift */,
 				52F06B171E4A6E6200F45C8B /* Assets.xcassets */,
@@ -74,6 +109,7 @@
 				52F06B091E4A6E6200F45C8B /* Sources */,
 				52F06B0A1E4A6E6200F45C8B /* Frameworks */,
 				52F06B0B1E4A6E6200F45C8B /* Resources */,
+				52E6ACEB1E7C52FA007961C3 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -124,8 +160,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				525DB0591E660A350089500E /* index.html in Resources */,
+				52E6ACE51E7C3F3A007961C3 /* files in Resources */,
 				52F06B1B1E4A6E6200F45C8B /* LaunchScreen.storyboard in Resources */,
+				52E6ACE71E7C513A007961C3 /* Cartfile in Resources */,
 				52F06B181E4A6E6200F45C8B /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -254,6 +291,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = 496JL3CVJ7;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
 				INFOPLIST_FILE = Treehub/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.treehub.app.ios.Treehub;
@@ -267,6 +308,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = 496JL3CVJ7;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Carthage/Build/iOS",
+				);
 				INFOPLIST_FILE = Treehub/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.treehub.app.ios.Treehub;

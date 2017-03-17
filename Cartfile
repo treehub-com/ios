@@ -1,0 +1,2 @@
+github "SwiftyJSON/SwiftyJSON" == 3.1.4
+github "marmelroy/Zip" == 0.7.0
