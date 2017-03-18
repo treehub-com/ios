@@ -46,24 +46,76 @@ var Z=window.customElements;if(!Z||Z.forcePolyfill||"function"!=typeof Z.define|
       }
     </style>
     <script>
-      // fetch('packages.json')
-      //   .then((res) => res.json())
-      //   .then((packages) => {
-      //     window.packages = packages;
-      //   })
-      //   .catch((error) => console.error(error));
-      class Component extends HTMLElement {
-        constructor() {
-          super();
+    // Monkey patch fetch to override local requests
+    window._fetchPromises = {};
+    window._fetch = fetch;
+    window.fetch = (urlString, options = {}) => {
+      const url = new URL(urlString, window.location.origin);
+      // Intercept requests to this domain and route them to our server
+      if (url.origin == window.location.origin) {
+        // Generate a uuid
+        const arr = [];
+        window.crypto.getRandomValues(new window.Uint8ClampedArray(16))
+          .forEach((e) => arr.push(e.toString(16)));
+        const uuid = arr.join('');
+        // Create a promise for this request
+        const promise = new Promise((resolve) => {
+          window._fetchPromises[uuid] = resolve;
+        });
+
+        if ( options.method === 'POST') {
+          window.webkit.messageHandlers.post.postMessage(JSON.stringify({
+            id: uuid,
+            url: url.pathname,
+            body: options.body,
+          }));
+        } else {
+          if (url.pathname === '/packages.json') {
+            window.webkit.messageHandlers.packages.postMessage(JSON.stringify({
+              id: uuid,
+            }));
+          } else {
+            window.webkit.messageHandlers.get.postMessage(JSON.stringify({
+              id: uuid,
+              body: options.body,
+            }));
+          }
         }
-        connectedCallback() {
-          this.innerHTML = 'It Works!';
-        }
+        return promise;
       }
-      window.customElements.define('custom-element', Component);
+      return window._fetch(urlString, options);
+    };
+    // Setup handler for ios post messages
+    window._iosMessage = (message) => {
+      console.log(message)
+      if (window._fetchPromises[message.id] === undefined) {
+        return console.error(`Missing promise for request ${message.id}`);
+      }
+      const response = new Response(message.body, {status: message.status});
+      window._fetchPromises[message.id].call(response, response);
+      delete window._fetchPromises[message.id];
+    };
+    // Fetch packages.json & pull in components
+    fetch('/packages.json')
+      .then((res) => res.json())
+      .then((packages) => {
+        window.packages = packages;
+        for (const pkg of Object.keys(window.packages)) {
+          if (Array.isArray(window.packages[pkg].components)) {
+            for (const component of window.packages[pkg].components) {
+              const script = document.createElement('script');
+              script.src = `${pkg}/${component}`;
+              document.head.appendChild(script);
+            }
+          }
+        }
+        document.body.innerHTML = '<th-app></th-app>';
+      })
+      .catch((error) => console.error(error));
+
     </script>
   </head>
   <body>
-    <custom-element></custom-element>
+    Loading...
   </body>
 </html>

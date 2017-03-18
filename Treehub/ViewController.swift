@@ -12,7 +12,7 @@ import UIKit
 import WebKit
 import Zip
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, WKScriptMessageHandler {
 
     var webView: WKWebView!
     
@@ -20,9 +20,16 @@ class ViewController: UIViewController {
     
     var defaultPackages: [String] = ["app", "test", "package-manager"]
     var installingPackages: [String: Bool] = [:]
+    var packagesJSON: JSON = JSON(data: "{}".data(using: .utf8)!)
     
     override func loadView() {
-        self.webView = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
+        let contentController = WKUserContentController();
+        contentController.add(self, name: "packages");
+
+        let config = WKWebViewConfiguration()
+        config.userContentController = contentController
+
+        self.webView = WKWebView(frame: .zero, configuration: config)
         self.view = webView
     }
     
@@ -42,10 +49,12 @@ class ViewController: UIViewController {
         // Ensure webview files exist
         let webviewIndexDest = webviewURL.appendingPathComponent("index.html")
         let webviewIndexSource = Bundle.main.url(forResource: "index", withExtension: "html", subdirectory: "files/webview")!
-        if (!FileManager.default.fileExists(atPath: webviewIndexDest.path)) {
-            try! FileManager.default.copyItem(atPath: webviewIndexSource.path, toPath: webviewIndexDest.path)
+        // TODO don't always overwrite
+        if (FileManager.default.fileExists(atPath: webviewIndexDest.path)) {
+            try! FileManager.default.removeItem(at: webviewIndexDest)
         }
-        
+        try! FileManager.default.copyItem(atPath: webviewIndexSource.path, toPath: webviewIndexDest.path)
+
         // Ensure server directory exists
         let serverURL = libraryURL.appendingPathComponent("server", isDirectory: true)
         try? FileManager.default.createDirectory(atPath: serverURL.path, withIntermediateDirectories: true, attributes: nil)
@@ -80,16 +89,14 @@ class ViewController: UIViewController {
 
     private func createPackagesJSON() {
         let packagesURL = libraryURL.appendingPathComponent("packages", isDirectory: true)
-        let packages = try! FileManager.default.contentsOfDirectory(atPath: packagesURL.path)
+        let installedPackages = try! FileManager.default.contentsOfDirectory(atPath: packagesURL.path)
 
-        var packagesJSON = JSON(data: "{}".data(using: .utf8)!)
-
-        for package in packages {
+        for package in installedPackages {
             let json = try! String(contentsOfFile: packagesURL.appendingPathComponent(package + "/treehub.json").path)
-            packagesJSON[package] = JSON(data: json.data(using: .utf8, allowLossyConversion: false)!)
+            self.packagesJSON[package] = JSON(data: json.data(using: .utf8, allowLossyConversion: false)!)
         }
 
-        try! packagesJSON.rawString()!.write(to: libraryURL.appendingPathComponent("packages.json"), atomically: true, encoding: .utf8)
+//        print(self.packagesJSON.rawString()!)
 
 //        print("packages.json created")
     }
@@ -102,6 +109,21 @@ class ViewController: UIViewController {
     private func loadWebview() {
         let content = try! String(contentsOfFile: libraryURL.appendingPathComponent("webview/index.html").path)
         self.webView.loadHTMLString(content, baseURL: libraryURL.appendingPathComponent("packages", isDirectory: true))
+    }
+
+    /* Javascript Callback Functions */
+
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        let request = JSON(data: (message.body as! String).data(using: .utf8)!)
+        print(request)
+        if (message.name == "packages") {
+            var response = JSON(data: "{}".data(using: .utf8)!)
+            response["id"] = request["id"]
+            response["status"] = JSON(200)
+            response["body"] = JSON(self.packagesJSON.rawString()!)
+            print("get packages")
+            self.webView.evaluateJavaScript("window._iosMessage(" + response.rawString()! + ");", completionHandler: nil)
+        }
     }
 
     /* Utility Functions */
