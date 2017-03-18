@@ -1,6 +1,6 @@
 <html>
-    <head>
-        <script>
+  <head>
+    <script>
 (function(){
 'use strict';var g=new function(){};var aa=new Set("annotation-xml color-profile font-face font-face-src font-face-uri font-face-format font-face-name missing-glyph".split(" "));function k(b){var a=aa.has(b);b=/^[a-z][.0-9_a-z]*-[\-.0-9_a-z]*$/.test(b);return!a&&b}function l(b){var a=b.isConnected;if(void 0!==a)return a;for(;b&&!(b.__CE_isImportDocument||b instanceof Document);)b=b.parentNode||(window.ShadowRoot&&b instanceof ShadowRoot?b.host:void 0);return!(!b||!(b.__CE_isImportDocument||b instanceof Document))}
 function m(b,a){for(;a&&a!==b&&!a.nextSibling;)a=a.parentNode;return a&&a!==b?a.nextSibling:null}
@@ -37,27 +37,33 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 */
 var Z=window.customElements;if(!Z||Z.forcePolyfill||"function"!=typeof Z.define||"function"!=typeof Z.get){var Y=new r;oa();qa();ra();ta();document.__CE_hasRegistry=!0;var ua=new E(Y);Object.defineProperty(window,"customElements",{configurable:!0,enumerable:!0,value:ua})};
 }).call(self);
-        </script>
-        <style>
-            * {
-                box-sizing: border-box;
-                margin: 0;
-                padding: 0;
-            }
-        </style>
-        <script>
-            class Component extends HTMLElement {
-                constructor() {
-                    super();
-                }
-                connectedCallback() {
-                    this.innerHTML = 'It Works!';
-                }
-            }
-            window.customElements.define('custom-element', Component);
-        </script>
-    </head>
-    <body>
-        <custom-element></custom-element>
-    </body>
+    </script>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+    <script>
+      // fetch('packages.json')
+      //   .then((res) => res.json())
+      //   .then((packages) => {
+      //     window.packages = packages;
+      //   })
+      //   .catch((error) => console.error(error));
+      class Component extends HTMLElement {
+        constructor() {
+          super();
+        }
+        connectedCallback() {
+          this.innerHTML = 'It Works!';
+        }
+      }
+      window.customElements.define('custom-element', Component);
+    </script>
+  </head>
+  <body>
+    <custom-element></custom-element>
+  </body>
 </html>
