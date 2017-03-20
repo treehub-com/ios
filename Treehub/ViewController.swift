@@ -7,6 +7,7 @@
 //
 
 import Alamofire
+import GCDWebServers
 import SwiftyJSON
 import UIKit
 import WebKit
@@ -15,21 +16,24 @@ import Zip
 class ViewController: UIViewController, WKScriptMessageHandler {
 
     var webView: WKWebView!
+    var webserver: GCDWebServer!
     
     let libraryURL = try! FileManager.default.url(for: .libraryDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+    var packagesURL: URL!
     
     var defaultPackages: [String] = ["app", "test", "package-manager"]
     var installingPackages: [String: Bool] = [:]
     var packagesJSON: JSON = JSON(data: "{}".data(using: .utf8)!)
     
     override func loadView() {
-        let contentController = WKUserContentController();
-        contentController.add(self, name: "packages");
+        // Load WebView
+//        let contentController = WKUserContentController();
+//        contentController.add(self, name: "packages");
+//
+//        let config = WKWebViewConfiguration()
+//        config.userContentController = contentController
 
-        let config = WKWebViewConfiguration()
-        config.userContentController = contentController
-
-        self.webView = WKWebView(frame: .zero, configuration: config)
+        self.webView = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
         self.view = webView
     }
     
@@ -38,7 +42,15 @@ class ViewController: UIViewController, WKScriptMessageHandler {
         
         self.ensureDirectories()
         self.installDefaultPackages() // Will call defaultPackagesInstalled() after packages are installed
+        self.startWebserver()
     }
+
+    private func defaultPackagesInstalled() {
+        self.createPackagesJSON()
+        self.startServer()
+        self.loadWebview()
+    }
+
 
     private func ensureDirectories() {
 
@@ -62,7 +74,7 @@ class ViewController: UIViewController, WKScriptMessageHandler {
         // TODO Ensure server files exist
         
         // Ensure packages directory exists
-        let packagesURL = libraryURL.appendingPathComponent("packages", isDirectory: true)
+        self.packagesURL = libraryURL.appendingPathComponent("packages", isDirectory: true)
         try? FileManager.default.createDirectory(atPath: packagesURL.path, withIntermediateDirectories: true, attributes: nil)
     }
 
@@ -81,10 +93,34 @@ class ViewController: UIViewController, WKScriptMessageHandler {
         }
     }
 
-    private func defaultPackagesInstalled() {
-        self.createPackagesJSON()
-        self.startServer()
-        self.loadWebview()
+    private func startWebserver() {
+        // Load WebServer
+        webserver = GCDWebServer()
+
+        // Note that Routes are evaluated last to first
+
+        // Default is to load index.html
+        webserver.addDefaultHandler(forMethod: "GET", request: GCDWebServerRequest.self, processBlock: {request in
+            let content = try! String(contentsOfFile: self.libraryURL.appendingPathComponent("webview/index.html").path)
+            return  GCDWebServerDataResponse(data: content.data(using: .utf8), contentType: "text/html")
+        })
+        // Any .js file gets pulled from packages dir
+        webserver.addHandler(forMethod: "GET", pathRegex: "/.*\\.js", request: GCDWebServerRequest.self, processBlock: {request in
+            let content = try! String(contentsOfFile: self.packagesURL.appendingPathComponent("." + (request?.path)!).path)
+            return  GCDWebServerDataResponse(data: content.data(using: .utf8), contentType: "application/javascript")
+        })
+        // packages.json
+        webserver.addHandler(forMethod: "GET", path: "/packages.json", request: GCDWebServerRequest.self, processBlock: {request in
+            return  GCDWebServerDataResponse(data: self.packagesJSON.rawString()?.data(using: .utf8), contentType: "application/json")
+        })
+        // POST requests
+        webserver.addDefaultHandler(forMethod: "POST", request: GCDWebServerRequest.self, processBlock: {request in
+            let content = "{}"
+            return  GCDWebServerDataResponse(data: content.data(using: .utf8), contentType: "application/json")
+        })
+
+        webserver.start(withPort: 8985, bonjourName: "Treehub")
+
     }
 
     private func createPackagesJSON() {
@@ -107,8 +143,7 @@ class ViewController: UIViewController, WKScriptMessageHandler {
     }
 
     private func loadWebview() {
-        let content = try! String(contentsOfFile: libraryURL.appendingPathComponent("webview/index.html").path)
-        self.webView.loadHTMLString(content, baseURL: libraryURL.appendingPathComponent("packages", isDirectory: true))
+        self.webView.load(URLRequest(url: URL(string:"http://localhost:8985")!))
     }
 
     /* Javascript Callback Functions */
@@ -158,14 +193,11 @@ class ViewController: UIViewController, WKScriptMessageHandler {
             }
             self.defaultPackagesInstalled()
         }
-//        print("installing", package, version)
     }
     
     private func unzipPackage(source: URL, destination: URL) {
-//        print("unzipping", source, "to", destination)
-
         do {
-        try Zip.unzipFile(source, destination: destination, overwrite: true, password: nil, progress: nil)
+            try Zip.unzipFile(source, destination: destination, overwrite: true, password: nil, progress: nil)
         } catch {
             print(error)
         }

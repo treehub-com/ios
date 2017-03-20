@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		52B39BF01E7D886000CF494B /* Alamofire.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52B39BEF1E7D886000CF494B /* Alamofire.framework */; };
 		52B39BF11E7D886900CF494B /* Alamofire.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 52B39BEF1E7D886000CF494B /* Alamofire.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		52B39BF31E7DDE2C00CF494B /* GCDWebServers.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52B39BF21E7DDE2C00CF494B /* GCDWebServers.framework */; };
+		52B39BF41E7DDE3900CF494B /* GCDWebServers.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 52B39BF21E7DDE2C00CF494B /* GCDWebServers.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		52E6ACE51E7C3F3A007961C3 /* files in Resources */ = {isa = PBXBuildFile; fileRef = 52E6ACE41E7C3F3A007961C3 /* files */; };
 		52E6ACE71E7C513A007961C3 /* Cartfile in Resources */ = {isa = PBXBuildFile; fileRef = 52E6ACE61E7C513A007961C3 /* Cartfile */; };
 		52E6ACEA1E7C52D7007961C3 /* Zip.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 52E6ACE91E7C52D7007961C3 /* Zip.framework */; };
@@ -28,6 +30,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				52B39BF41E7DDE3900CF494B /* GCDWebServers.framework in CopyFiles */,
 				52B39BF11E7D886900CF494B /* Alamofire.framework in CopyFiles */,
 				52E6ACEF1E7C55AE007961C3 /* SwiftyJSON.framework in CopyFiles */,
 				52E6ACEC1E7C5315007961C3 /* Zip.framework in CopyFiles */,
@@ -38,6 +41,7 @@
 
 /* Begin PBXFileReference section */
 		52B39BEF1E7D886000CF494B /* Alamofire.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Alamofire.framework; path = Carthage/Build/iOS/Alamofire.framework; sourceTree = "<group>"; };
+		52B39BF21E7DDE2C00CF494B /* GCDWebServers.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GCDWebServers.framework; path = Carthage/Build/iOS/GCDWebServers.framework; sourceTree = "<group>"; };
 		52E6ACE41E7C3F3A007961C3 /* files */ = {isa = PBXFileReference; lastKnownFileType = folder; path = files; sourceTree = "<group>"; };
 		52E6ACE61E7C513A007961C3 /* Cartfile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Cartfile; sourceTree = "<group>"; };
 		52E6ACE91E7C52D7007961C3 /* Zip.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Zip.framework; path = Carthage/Build/iOS/Zip.framework; sourceTree = "<group>"; };
@@ -56,6 +60,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				52B39BF01E7D886000CF494B /* Alamofire.framework in Frameworks */,
+				52B39BF31E7DDE2C00CF494B /* GCDWebServers.framework in Frameworks */,
 				52E6ACEE1E7C559F007961C3 /* SwiftyJSON.framework in Frameworks */,
 				52E6ACEA1E7C52D7007961C3 /* Zip.framework in Frameworks */,
 			);
@@ -67,6 +72,7 @@
 		52E6ACE81E7C52D7007961C3 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				52B39BF21E7DDE2C00CF494B /* GCDWebServers.framework */,
 				52B39BEF1E7D886000CF494B /* Alamofire.framework */,
 				52E6ACED1E7C559F007961C3 /* SwiftyJSON.framework */,
 				52E6ACE91E7C52D7007961C3 /* Zip.framework */,

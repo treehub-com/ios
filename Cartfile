@@ -1,3 +1,4 @@
 github "Alamofire/Alamofire" == 4.4.0
+github "swisspol/GCDWebServer" == 3.3.3
 github "SwiftyJSON/SwiftyJSON" == 3.1.4
 github "marmelroy/Zip" == 0.7.0
