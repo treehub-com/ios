@@ -17,9 +17,9 @@ class ViewController: UIViewController, WKScriptMessageHandler {
 
     var webView: WKWebView!
     var webserver: GCDWebServer!
-    var server: WKWebView!
+    var server: WKWebView! // TODO replace this with JavascriptCore
 
-    var htmlURL: URL!
+    var filesURL: URL!
     var packagesURL: URL!
     
     var defaultPackages: [String] = ["app", "test", "package-manager"]
@@ -29,7 +29,7 @@ class ViewController: UIViewController, WKScriptMessageHandler {
     override func loadView() {
         // Set URLs
         let libraryURL = try! FileManager.default.url(for: .libraryDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-        self.htmlURL = libraryURL.appendingPathComponent("html", isDirectory: true)
+        self.filesURL = libraryURL.appendingPathComponent("files", isDirectory: true)
         self.packagesURL = libraryURL.appendingPathComponent("packages", isDirectory: true)
 
         // Set webview
@@ -54,18 +54,22 @@ class ViewController: UIViewController, WKScriptMessageHandler {
 
     private func ensureDirectories() {
         // Ensure html directory exists/populated
-        try? FileManager.default.createDirectory(atPath: self.htmlURL.path, withIntermediateDirectories: true, attributes: nil)
-        let indexDest = self.htmlURL.appendingPathComponent("index.html")
-        let indexSource = Bundle.main.url(forResource: "index", withExtension: "html", subdirectory: "files")!
-        // TODO don't always overwrite
-        if (FileManager.default.fileExists(atPath: indexDest.path)) {
-            try! FileManager.default.removeItem(at: indexDest)
-        }
-        try! FileManager.default.copyItem(atPath: indexSource.path, toPath: indexDest.path)
+        try? FileManager.default.createDirectory(atPath: self.filesURL.path, withIntermediateDirectories: true, attributes: nil)
+        let files = try! FileManager.default.contentsOfDirectory(atPath: Bundle.main.bundleURL.appendingPathComponent("files", isDirectory: true).path)
 
+        for file in files {
+            let source = Bundle.main.bundleURL.appendingPathComponent("files/" + file)
+            let dest = self.filesURL.appendingPathComponent(file)
+            // TODO don't always overwrite
+            if (FileManager.default.fileExists(atPath: dest.path)) {
+                try! FileManager.default.removeItem(at: dest)
+            }
+            try! FileManager.default.copyItem(atPath: source.path, toPath: dest.path)
+        }
 
         // Ensure packages directory exists
         try? FileManager.default.createDirectory(atPath: packagesURL.path, withIntermediateDirectories: true, attributes: nil)
+        
     }
 
     private func installDefaultPackages() {
@@ -90,7 +94,7 @@ class ViewController: UIViewController, WKScriptMessageHandler {
 
         // Default is to load index.html
         webserver.addDefaultHandler(forMethod: "GET", request: GCDWebServerRequest.self, processBlock: {request in
-            let content = try! String(contentsOfFile: self.htmlURL.appendingPathComponent("index.html").path)
+            let content = try! String(contentsOfFile: self.filesURL.appendingPathComponent("index.html").path)
             return  GCDWebServerDataResponse(data: content.data(using: .utf8), contentType: "text/html")
         })
         // Any .js file gets pulled from packages dir
@@ -101,6 +105,12 @@ class ViewController: UIViewController, WKScriptMessageHandler {
         // packages.json
         webserver.addHandler(forMethod: "GET", path: "/packages.json", request: GCDWebServerRequest.self, processBlock: {request in
             return  GCDWebServerDataResponse(data: self.packagesJSON.rawString()?.data(using: .utf8), contentType: "application/json")
+        })
+        // _ files
+        webserver.addHandler(forMethod: "GET", pathRegex: "/_/.*", request: GCDWebServerRequest.self, processBlock: {request in
+            let path = request?.path.replacingOccurrences(of: "/_/", with: "")
+            let content = try! String(contentsOfFile: self.filesURL.appendingPathComponent(path!).path)
+            return  GCDWebServerDataResponse(data: content.data(using: .utf8), contentType: "text/html")
         })
         // POST requests
         webserver.addDefaultHandler(forMethod: "POST", request: GCDWebServerRequest.self, processBlock: {request in
@@ -130,7 +140,7 @@ class ViewController: UIViewController, WKScriptMessageHandler {
 
         self.server = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
 
-        // TODO load server.html
+        self.server.load(URLRequest(url: URL(string:"http://localhost:8985/_/server.html")!))
 
         // TODO load routes
 
