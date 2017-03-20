@@ -17,8 +17,9 @@ class ViewController: UIViewController, WKScriptMessageHandler {
 
     var webView: WKWebView!
     var webserver: GCDWebServer!
-    
-    let libraryURL = try! FileManager.default.url(for: .libraryDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+    var server: WKWebView!
+
+    var htmlURL: URL!
     var packagesURL: URL!
     
     var defaultPackages: [String] = ["app", "test", "package-manager"]
@@ -26,13 +27,12 @@ class ViewController: UIViewController, WKScriptMessageHandler {
     var packagesJSON: JSON = JSON(data: "{}".data(using: .utf8)!)
     
     override func loadView() {
-        // Load WebView
-//        let contentController = WKUserContentController();
-//        contentController.add(self, name: "packages");
-//
-//        let config = WKWebViewConfiguration()
-//        config.userContentController = contentController
+        // Set URLs
+        let libraryURL = try! FileManager.default.url(for: .libraryDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
+        self.htmlURL = libraryURL.appendingPathComponent("html", isDirectory: true)
+        self.packagesURL = libraryURL.appendingPathComponent("packages", isDirectory: true)
 
+        // Set webview
         self.webView = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
         self.view = webView
     }
@@ -53,35 +53,24 @@ class ViewController: UIViewController, WKScriptMessageHandler {
 
 
     private func ensureDirectories() {
-
-        // Ensure webview directory exists
-        let webviewURL = libraryURL.appendingPathComponent("webview", isDirectory: true)
-        try? FileManager.default.createDirectory(atPath: webviewURL.path, withIntermediateDirectories: true, attributes: nil)
-        
-        // Ensure webview files exist
-        let webviewIndexDest = webviewURL.appendingPathComponent("index.html")
-        let webviewIndexSource = Bundle.main.url(forResource: "index", withExtension: "html", subdirectory: "files/webview")!
+        // Ensure html directory exists/populated
+        try? FileManager.default.createDirectory(atPath: self.htmlURL.path, withIntermediateDirectories: true, attributes: nil)
+        let indexDest = self.htmlURL.appendingPathComponent("index.html")
+        let indexSource = Bundle.main.url(forResource: "index", withExtension: "html", subdirectory: "files")!
         // TODO don't always overwrite
-        if (FileManager.default.fileExists(atPath: webviewIndexDest.path)) {
-            try! FileManager.default.removeItem(at: webviewIndexDest)
+        if (FileManager.default.fileExists(atPath: indexDest.path)) {
+            try! FileManager.default.removeItem(at: indexDest)
         }
-        try! FileManager.default.copyItem(atPath: webviewIndexSource.path, toPath: webviewIndexDest.path)
+        try! FileManager.default.copyItem(atPath: indexSource.path, toPath: indexDest.path)
 
-        // Ensure server directory exists
-        let serverURL = libraryURL.appendingPathComponent("server", isDirectory: true)
-        try? FileManager.default.createDirectory(atPath: serverURL.path, withIntermediateDirectories: true, attributes: nil)
-        
-        // TODO Ensure server files exist
-        
+
         // Ensure packages directory exists
-        self.packagesURL = libraryURL.appendingPathComponent("packages", isDirectory: true)
         try? FileManager.default.createDirectory(atPath: packagesURL.path, withIntermediateDirectories: true, attributes: nil)
     }
 
     private func installDefaultPackages() {
-        let packagesURL = libraryURL.appendingPathComponent("packages", isDirectory: true)
-        let packages = try! FileManager.default.contentsOfDirectory(atPath: packagesURL.path)
-//        print(packages)
+        let packages = try! FileManager.default.contentsOfDirectory(atPath: self.packagesURL.path)
+
         for package in self.defaultPackages {
             if (!packages.contains(package)) {
                 self.installingPackages[package] = true
@@ -101,7 +90,7 @@ class ViewController: UIViewController, WKScriptMessageHandler {
 
         // Default is to load index.html
         webserver.addDefaultHandler(forMethod: "GET", request: GCDWebServerRequest.self, processBlock: {request in
-            let content = try! String(contentsOfFile: self.libraryURL.appendingPathComponent("webview/index.html").path)
+            let content = try! String(contentsOfFile: self.htmlURL.appendingPathComponent("index.html").path)
             return  GCDWebServerDataResponse(data: content.data(using: .utf8), contentType: "text/html")
         })
         // Any .js file gets pulled from packages dir
@@ -124,22 +113,27 @@ class ViewController: UIViewController, WKScriptMessageHandler {
     }
 
     private func createPackagesJSON() {
-        let packagesURL = libraryURL.appendingPathComponent("packages", isDirectory: true)
         let installedPackages = try! FileManager.default.contentsOfDirectory(atPath: packagesURL.path)
 
         for package in installedPackages {
             let json = try! String(contentsOfFile: packagesURL.appendingPathComponent(package + "/treehub.json").path)
             self.packagesJSON[package] = JSON(data: json.data(using: .utf8, allowLossyConversion: false)!)
         }
-
-//        print(self.packagesJSON.rawString()!)
-
-//        print("packages.json created")
     }
 
     private func startServer() {
-//        print("starting server")
-        // TODO
+        let contentController = WKUserContentController();
+        contentController.add(self, name: "packages");
+        
+        let config = WKWebViewConfiguration()
+        config.userContentController = contentController
+
+        self.server = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
+
+        // TODO load server.html
+
+        // TODO load routes
+
     }
 
     private func loadWebview() {
