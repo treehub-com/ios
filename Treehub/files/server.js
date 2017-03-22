@@ -1,13 +1,11 @@
-const files = {};
+// TODO move core routes to swift
 const routes = {
   _: coreRoute,
 };
 
-function addRoute(pkg, file) {
-  files[pkg] = file;
-}
-
 async function loadRoutes() {
+  console.log('called');
+  // files is set from swift
   // Loop through route files & load
   for (const pkg of Object.keys(files)) {
     const code = files[pkg];
@@ -28,7 +26,6 @@ async function loadRoutes() {
       pathPrefix: pkg + '/',
     });
   }
-  window.webkit.messageHandlers.loaded.postMessage("");
 }
 
 /*
@@ -44,11 +41,12 @@ function response(obj) {
 }
 
 function request({id, route, body}) {
+  console.log(id, route, body)
   const path = route.split('/').filter((s)=>s !== '');
 
   if (path.length === 0) {
     return response({
-      id: request.id,
+      id,
       status: 404,
       body: JSON.stringify({message: 'No Route Specified'}),
     });
@@ -57,7 +55,7 @@ function request({id, route, body}) {
   const pkg = path.shift().toLowerCase();
   if (routes[pkg] === undefined) {
     return response({
-      id: request.id,
+      id,
       status: 404,
       body: JSON.stringify({message: 'No Route for Package'}),
     });

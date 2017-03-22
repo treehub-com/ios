@@ -19,10 +19,12 @@ class ViewController: UIViewController, WKScriptMessageHandler {
     var webserver: GCDWebServer!
     var server: WKWebView! // TODO replace this with JavascriptCore
 
+    var requests: [String: GCDWebServerCompletionBlock] = [:]
+
     var filesURL: URL!
     var packagesURL: URL!
     
-    var defaultPackages: [String] = ["app", "test", "package-manager"]
+    var defaultPackages: [String] = ["app", "api", "package-manager"]
     var installingPackages: [String: Bool] = [:]
     var packagesJSON: JSON = JSON(data: "{}".data(using: .utf8)!)
     
@@ -47,8 +49,7 @@ class ViewController: UIViewController, WKScriptMessageHandler {
 
     private func defaultPackagesInstalled() {
         self.createPackagesJSON()
-        self.startServer()
-        self.loadWebview()
+        self.startServer() // Will call loadWebview()
     }
 
 
@@ -113,9 +114,20 @@ class ViewController: UIViewController, WKScriptMessageHandler {
             return  GCDWebServerDataResponse(data: content.data(using: .utf8), contentType: "text/html")
         })
         // POST requests
-        webserver.addDefaultHandler(forMethod: "POST", request: GCDWebServerRequest.self, processBlock: {request in
-            let content = "{}"
-            return  GCDWebServerDataResponse(data: content.data(using: .utf8), contentType: "application/json")
+        webserver.addDefaultHandler(forMethod: "POST", request: GCDWebServerDataRequest.self, asyncProcessBlock: { request, completionBlock in
+            // TODO handle internal routes in swift
+
+            let id = UUID.init().uuidString
+            self.requests[id] = completionBlock
+            var serverRequest = JSON(data: "{}".data(using: .utf8)!)
+            serverRequest["id"] = JSON.init(stringLiteral: id)
+            serverRequest["route"] = JSON.init(stringLiteral: (request?.path)!)
+            serverRequest["body"] = JSON.init(stringLiteral: "")
+            if (request?.hasBody())! {
+                serverRequest["body"] = JSON.init(stringLiteral: String(data: (request as! GCDWebServerDataRequest).data, encoding: .utf8)!)
+            }
+
+            self.server.evaluateJavaScript("request(" + serverRequest.rawString()! + ");", completionHandler: nil)
         })
 
         webserver.start(withPort: 8985, bonjourName: "Treehub")
@@ -132,18 +144,30 @@ class ViewController: UIViewController, WKScriptMessageHandler {
     }
 
     private func startServer() {
+        // Load routes
+        // TODO do this a better way
+        var routes = JSON(data: "{}".data(using: .utf8)!)
+        for (package, json) in self.packagesJSON {
+            if let path = json["route"].string {
+                // TODO catch this error
+                let packagePath = self.packagesURL.appendingPathComponent(package)
+                let route = try! String(contentsOfFile: packagePath.appendingPathComponent(path).path)
+                routes[package] = JSON.init(stringLiteral: route)
+            }
+        }
+
         let contentController = WKUserContentController();
-        contentController.add(self, name: "packages");
-        
+        contentController.add(self, name: "loaded");
+        contentController.add(self, name: "response");
+
+        contentController.addUserScript(WKUserScript(source: "const files = " + routes.rawString()!, injectionTime: .atDocumentStart, forMainFrameOnly: true))
+
         let config = WKWebViewConfiguration()
         config.userContentController = contentController
 
-        self.server = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
+        self.server = WKWebView(frame: .zero, configuration: config)
 
-        self.server.load(URLRequest(url: URL(string:"http://localhost:8985/_/server.html")!))
-
-        // TODO load routes
-
+        self.server.load(URLRequest(url: URL(string:"http://localhost:8985/_/server.html")!)) // Will call loadWebview() after loading routes
     }
 
     private func loadWebview() {
@@ -153,15 +177,17 @@ class ViewController: UIViewController, WKScriptMessageHandler {
     /* Javascript Callback Functions */
 
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        let request = JSON(data: (message.body as! String).data(using: .utf8)!)
-        print(request)
-        if (message.name == "packages") {
-            var response = JSON(data: "{}".data(using: .utf8)!)
-            response["id"] = request["id"]
-            response["status"] = JSON(200)
-            response["body"] = JSON(self.packagesJSON.rawString()!)
-            print("get packages")
-            self.webView.evaluateJavaScript("window._iosMessage(" + response.rawString()! + ");", completionHandler: nil)
+        if (message.name == "loaded") {
+            self.loadWebview()
+        }
+        if (message.name == "response") {
+            let rawResponse = JSON(data: (message.body as! String).data(using: .utf8)!)
+            let id = rawResponse["id"].string!
+            if let completionHandler = self.requests[id] {
+                let response = GCDWebServerDataResponse(data: rawResponse["body"].rawString()?.data(using: .utf8), contentType: "application/json")
+                completionHandler(response)
+                self.requests.removeValue(forKey: id)
+            }
         }
     }
 

@@ -2,6 +2,16 @@
   <head>
     <script src="level.js"></script>
     <script src="server.js"></script>
+    <script>
+      loadRoutes()
+        .then(() => {
+          window.webkit.messageHandlers.loaded.postMessage("");
+        })
+        .catch((error) => {
+          // TODO handle failure
+          console.error(error);
+        });
+    </script>
   </head>
   <body>
   </body>
