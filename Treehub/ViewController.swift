@@ -79,7 +79,7 @@ class ViewController: UIViewController, WKScriptMessageHandler {
         for package in self.defaultPackages {
             if (!packages.contains(package)) {
                 self.installingPackages[package] = true
-                self.installPackage(package: package, destination: packagesURL)
+                self.installPackage(package: package)
             }
         }
         if (self.installingPackages.count == 0) {
@@ -116,18 +116,33 @@ class ViewController: UIViewController, WKScriptMessageHandler {
         // POST requests
         webserver.addDefaultHandler(forMethod: "POST", request: GCDWebServerDataRequest.self, asyncProcessBlock: { request, completionBlock in
             // TODO handle internal routes in swift
+            let path = (request?.path)!
 
-            let id = UUID.init().uuidString
-            self.requests[id] = completionBlock
-            var serverRequest = JSON(data: "{}".data(using: .utf8)!)
-            serverRequest["id"] = JSON.init(stringLiteral: id)
-            serverRequest["route"] = JSON.init(stringLiteral: (request?.path)!)
-            serverRequest["body"] = JSON.init(stringLiteral: "")
-            if (request?.hasBody())! {
-                serverRequest["body"] = JSON.init(stringLiteral: String(data: (request as! GCDWebServerDataRequest).data, encoding: .utf8)!)
+            if path.hasPrefix("/_/") {
+                if path == "/_/package/install" {
+//                    let body = JSON((request as! GCDWebServerDataRequest).data)
+//                    self.installPackage(package: body["name"].stringValue)
+                    completionBlock!(GCDWebServerDataResponse(data: "true".data(using: .utf8), contentType: "application/json"))
+                } else if path == "/_/package/uninstall" {
+                    completionBlock!(GCDWebServerDataResponse(data: "true".data(using: .utf8), contentType: "application/json"))
+                } else {
+                    let response = GCDWebServerDataResponse(data: "{\"message\": \"Unknown Route\"}".data(using: .utf8), contentType: "application/json")
+                    response?.statusCode = 404
+                    completionBlock!(response)
+                }
+            } else {
+                let id = UUID.init().uuidString
+                self.requests[id] = completionBlock
+                var serverRequest = JSON(data: "{}".data(using: .utf8)!)
+                serverRequest["id"] = JSON.init(stringLiteral: id)
+                serverRequest["route"] = JSON.init(stringLiteral: path)
+                serverRequest["body"] = JSON.init(stringLiteral: "")
+                if (request?.hasBody())! {
+                    serverRequest["body"] = JSON.init(stringLiteral: String(data: (request as! GCDWebServerDataRequest).data, encoding: .utf8)!)
+                }
+
+                self.server.evaluateJavaScript("request(" + serverRequest.rawString()! + ");", completionHandler: nil)
             }
-
-            self.server.evaluateJavaScript("request(" + serverRequest.rawString()! + ");", completionHandler: nil)
         })
 
         webserver.start(withPort: 8985, bonjourName: "Treehub")
@@ -185,6 +200,7 @@ class ViewController: UIViewController, WKScriptMessageHandler {
             let id = rawResponse["id"].string!
             if let completionHandler = self.requests[id] {
                 let response = GCDWebServerDataResponse(data: rawResponse["body"].rawString()?.data(using: .utf8), contentType: "application/json")
+                response?.statusCode = rawResponse["status"].int!
                 completionHandler(response)
                 self.requests.removeValue(forKey: id)
             }
@@ -193,7 +209,7 @@ class ViewController: UIViewController, WKScriptMessageHandler {
 
     /* Utility Functions */
 
-    private func installPackage(package: String, destination: URL, version: String = "latest") {
+    private func installPackage(package: String, version: String = "latest") {
         
         let url = URL(string: "https://packages.treehub.com/" + package + "/" + version + ".zip")
         
@@ -204,7 +220,7 @@ class ViewController: UIViewController, WKScriptMessageHandler {
             return (tempURI, [.removePreviousFile, .createIntermediateDirectories])
         }
         
-        let destinationURL = destination.appendingPathComponent(package, isDirectory: true)
+        let destinationURL = self.packagesURL.appendingPathComponent(package, isDirectory: true)
         try? FileManager.default.createDirectory(atPath: destinationURL.path, withIntermediateDirectories: true, attributes: nil)
         
         Alamofire.download(url!, to: cacheDestination).response { response in

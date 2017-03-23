@@ -1,7 +1,5 @@
 // TODO move core routes to swift
-const routes = {
-  _: coreRoute,
-};
+const routes = {};
 
 async function loadRoutes() {
   console.log('called');
@@ -80,27 +78,3 @@ function request({id, route, body}) {
       });
     })
 }
-
-async function coreRoute({route, body}) {
-  switch(route) {
-    case '/package/install':
-      return installPackage(body);
-    case '/package/uninstall':
-      return uninstallPackage(body);
-    default:
-      const error = new Error('Unknown Route');
-      error.status = 404;
-      throw error;
-  }
-}
-
-async function installPackage({name, version = 'latest'}) {
-  console.log(`installing package ${name}`);
-  // TODO
-  return true;
-};
-
-async function uninstallPackage({name}) {
-  console.log(`uninstalling package ${name}`);
-  return true;
-};
