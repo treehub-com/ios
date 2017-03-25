@@ -1,0 +1,43 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <style>
+      :root {
+        font-size: 16px;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+    <script>
+    function _message(message) {
+      document.getElementById('_message').innerHTML = message;
+    }
+    async function _load() {
+      const res = await fetch('/packages.json');
+      const packages = await res.json();
+      window.packages = packages;
+      for (const pkg of Object.keys(window.packages)) {
+        if (Array.isArray(window.packages[pkg].components)) {
+          for (const component of window.packages[pkg].components) {
+            const script = document.createElement('script');
+            script.src = `${pkg}/${component}`;
+            document.head.appendChild(script);
+          }
+        }
+      }
+      document.body.innerHTML = '<th-app></th-app>';
+    }
+    </script>
+  </head>
+  <body>
+    <div style="width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center;">
+      <div style="display: flex; flex-direction: column; align-items: center;">
+        <svg style="height: 4em; margin-bottom: 1em;" viewBox="0 0 145 140" xmlns="http://www.w3.org/2000/svg"><title>Logo</title><path d="M70 10v130H50V20H0V0h70v10zm75 50v80h-20V70H90V50h55v10z" fill="#000" fill-rule="evenodd"/></svg>
+        <div id="_message">Loading Treehub</div>
+      </div>
+    </div>
+  </body>
+</html>
