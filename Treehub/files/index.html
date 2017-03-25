@@ -12,24 +12,21 @@
       }
     </style>
     <script>
-    // Fetch packages.json & pull in components
-    fetch('/packages.json')
-      .then((res) => res.json())
-      .then((packages) => {
-        window.packages = packages;
-        for (const pkg of Object.keys(window.packages)) {
-          if (Array.isArray(window.packages[pkg].components)) {
-            for (const component of window.packages[pkg].components) {
-              const script = document.createElement('script');
-              script.src = `${pkg}/${component}`;
-              document.head.appendChild(script);
-            }
+    async function _load() {
+      const res = await fetch('/packages.json');
+      const packages = await res.json();
+      window.packages = packages;
+      for (const pkg of Object.keys(window.packages)) {
+        if (Array.isArray(window.packages[pkg].components)) {
+          for (const component of window.packages[pkg].components) {
+            const script = document.createElement('script');
+            script.src = `${pkg}/${component}`;
+            document.head.appendChild(script);
           }
         }
-        document.body.innerHTML = '<th-app></th-app>';
-      })
-      .catch((error) => console.error(error));
-
+      }
+      document.body.innerHTML = '<th-app></th-app>';
+    }
     </script>
   </head>
   <body>
