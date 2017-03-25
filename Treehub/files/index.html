@@ -12,6 +12,9 @@
       }
     </style>
     <script>
+    function _message(message) {
+      document.getElementById('_message').innerHTML = message;
+    }
     async function _load() {
       const res = await fetch('/packages.json');
       const packages = await res.json();
@@ -30,6 +33,11 @@
     </script>
   </head>
   <body>
-    Loading...
+    <div style="width: 100vw; height: 100vh; display: flex; align-items: center; justify-content: center;">
+      <div style="display: flex; flex-direction: column; align-items: center;">
+        <svg style="height: 4em; margin-bottom: 1em;" viewBox="0 0 145 140" xmlns="http://www.w3.org/2000/svg"><title>Logo</title><path d="M70 10v130H50V20H0V0h70v10zm75 50v80h-20V70H90V50h55v10z" fill="#000" fill-rule="evenodd"/></svg>
+        <div id="_message">Loading Treehub</div>
+      </div>
+    </div>
   </body>
 </html>

@@ -44,8 +44,7 @@ class ViewController: UIViewController, WKScriptMessageHandler {
 
         self.startWebserver()
         self.webview.load(URLRequest(url: URL(string:"http://localhost:8985")!))
-        
-        
+
         self.ensureDefaultPackages()
             .then { _ in
                 return self.startServer()
@@ -54,6 +53,7 @@ class ViewController: UIViewController, WKScriptMessageHandler {
                 self.webview.evaluateJavaScript("window._load()", completionHandler: nil)
             }
             .catch { error in
+                self.webview.evaluateJavaScript("window._message('Could not load Treehub')", completionHandler: nil)
                 print(error)
             }
 
